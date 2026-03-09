@@ -24,7 +24,14 @@ async function dbConnect() {
     }
 
     if (!globalWithMongoose.mongooseConnection.promise) {
-        globalWithMongoose.mongooseConnection.promise = mongoose.connect(process.env.MONGODB_URI!);
+        let uri = process.env.MONGODB_URI || '';
+        uri = uri.replace(/^["']|["']$/g, '');
+
+        if (!uri.startsWith('mongodb://') && !uri.startsWith('mongodb+srv://')) {
+            throw new Error(`Invalid MONGODB_URI: Must start with "mongodb://" or "mongodb+srv://". Did you paste the wrong string in Vercel?`);
+        }
+
+        globalWithMongoose.mongooseConnection.promise = mongoose.connect(uri);
     }
 
     globalWithMongoose.mongooseConnection.conn = await globalWithMongoose.mongooseConnection.promise;
